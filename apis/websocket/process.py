@@ -25,9 +25,9 @@ def get_data(data: SendDataModel) -> dict:
 async def responseUser(receive_data: SendDataModel, robot: Robot, route: str):
     try:
         message, time_s, end = robot.run(receive_data.data.content)
-        if isinstance(message, str):
+        if isinstance(message, str) or end != 0:
             receive_data.data = ChatItemModel(
-                content=message,
+                content=message if message is not None else "对话结束",
                 sendTime=time_s,
                 id=uuid4().hex,
                 status="success",

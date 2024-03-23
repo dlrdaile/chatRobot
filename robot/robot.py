@@ -17,7 +17,7 @@ class Robot:
         self.max_times = 30
 
     def run(self, content):
-        message = None
+        message = ""
         time_s = '8:{:02d}'.format(self.time)
         end = 0
         print(time_s)
@@ -36,9 +36,9 @@ class Robot:
                 self.actor.add_action(action)
                 self.time += act_time
                 if self.time >= self.max_times or end > 0:
-                    message = None
+                    message = "对话结束"
                     break
-
+        time_s = '8:{:02d}'.format(self.time)
         if self.time >= self.max_times:
             self.actor.reset()
             self.env.new_loop()
@@ -46,7 +46,6 @@ class Robot:
             end = 2
             print("=========================== Boom =============================")
 
-        time_s = '8:{:02d}'.format(self.time)
         return message, time_s, end
 
 
