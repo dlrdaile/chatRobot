@@ -21,8 +21,10 @@ prompts = {
 '''
 }
 
-
-from .zhipu import chat
+try:
+    from .zhipu import chat
+except:
+    from zhipu import chat
 
 class Actor():
     def __init__(self):
