@@ -24,14 +24,15 @@ try:
 except:
     from zhipu import Chat
 
+
 class Actor():
     def __init__(self, chatClient: Chat):
         self.chatClient = chatClient
         self.reset()
 
     def reset(self):
-        self.actions = [] # (time, action, response)
-        self.messages = [] # (time, speaker, message)
+        self.actions = []  # (time, action, response)
+        self.messages = []  # (time, speaker, message)
         self.records = []
         self.time = "8:00"
 
@@ -49,7 +50,7 @@ class Actor():
         (time, speaker, message) = message
         self.records.append(
             str(time) + " " +
-            ('你向顾文博发消息：' if speaker == '徐天行' else '顾文博向你发消息：') + 
+            ('你向顾文博发消息：' if speaker == '徐天行' else '顾文博向你发消息：') +
             message
         )
 
@@ -96,4 +97,3 @@ class Actor():
             elif t == 'B':
                 action = [self.time, message, None]
                 return t, action
-

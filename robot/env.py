@@ -51,22 +51,24 @@ prompt = '''徐天行是一名陆军士兵，陷入了时间循环。他早上8:
 # 请注意，尽量在多次循环后再让徐天行发现真相并成功阻止炸弹爆炸。
 
 try:
-    from .zhipu import chat
+    from .zhipu import Chat
 except:
-    from zhipu import chat
+    from zhipu import Chat
 import re
 
+
 class Env():
-    def __init__(self):
+    def __init__(self, chatClient: Chat):
+        self.chatClient = chatClient
         self.loop_history = []
-        self.loop = [["8:00", "徐天行从火车上醒来"]] # (time, response)
+        self.loop = [["8:00", "徐天行从火车上醒来"]]  # (time, response)
 
     def new_loop(self):
         self.loop_history.append(self.loop)
         self.loop = [["8:00", "徐天行从火车上醒来"]]
 
     def construct_prompt_loop(self, loop, i):
-        return f"第{i+1}次循环：\n" + "\n".join([f"{time} {response}" for (time, response) in loop])
+        return f"第{i + 1}次循环：\n" + "\n".join([f"{time} {response}" for (time, response) in loop])
 
     def construct_prompt_loop_history(self):
         return "\n\n".join([self.construct_prompt_loop(loop, i) for i, loop in enumerate(self.loop_history)])
@@ -83,7 +85,7 @@ class Env():
 
         retry = 0
         while True:
-            ret = chat(prompt)
+            ret = self.chatClient.chat(prompt)
             # print("====================")
             # print(prompt)
             # print("====================")
@@ -112,4 +114,3 @@ class Env():
             retry += 1
             if retry >= 3:
                 exit(0)
-
