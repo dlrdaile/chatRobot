@@ -1,7 +1,5 @@
 from zhipuai import ZhipuAI
 
-"bb068c827c8a42bb37fbdbb81ae82ff2.mmxjKl4ScNmdVVAV"
-
 
 class Chat:
     def __init__(self, api_key: str):
