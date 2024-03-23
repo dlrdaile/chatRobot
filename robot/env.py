@@ -36,7 +36,7 @@ prompt = '''徐天行是一名陆军士兵，陷入了时间循环。他早上8:
 {}
 
 
-注意：对于当前循环第一次见的人物，用外貌指代。注意车上的人都是陌生人，徐天行并不能在交谈前知道对方的名字，交谈不一定能取得对方的信任。如果两个人发生了交谈，请模拟出交谈的具体内容。注意！！！当前循环内徐天行没有主动要搜索关于炸弹的线索时，不要提及炸弹！！！也不要提及任何引爆等相关词汇！！！！！！！！！！！！！！！！
+注意：对于当前循环第一次见的人物，用外貌指代。注意车上的人都是陌生人，徐天行并不能在交谈前知道对方的名字，交谈有可能发现对方的秘密。如果两个人发生了交谈，请模拟出交谈的具体内容。注意！！！当前循环内徐天行没有主动要搜索关于炸弹的线索时，不要提及炸弹！！！也不要提及任何引爆等相关词汇！！！！！！！！！！！！！！！！
 
 作为这个世界的控制者，对于这一次操作，请以以下格式输出回应，只包括四行内容：
 
@@ -49,22 +49,24 @@ prompt = '''徐天行是一名陆军士兵，陷入了时间循环。他早上8:
 # 请注意，尽量在多次循环后再让徐天行发现真相并成功阻止炸弹爆炸。
 
 try:
-    from .zhipu import chat
+    from .zhipu import Chat
 except:
-    from zhipu import chat
+    from zhipu import Chat
 import re
 
+
 class Env():
-    def __init__(self):
+    def __init__(self, chatClient: Chat):
         self.loop_history = []
-        self.loop = [["8:00", "徐天行从火车上醒来"]] # (time, response)
+        self.chatClient = chatClient
+        self.loop = [["8:00", "徐天行从火车上醒来"]]  # (time, response)
 
     def new_loop(self):
         self.loop_history.append(self.loop)
         self.loop = [["8:00", "徐天行从火车上醒来"]]
 
     def construct_prompt_loop(self, loop, i):
-        return f"第{i+1}次循环：\n" + "\n".join([f"{time} {response}" for (time, response) in loop])
+        return f"第{i + 1}次循环：\n" + "\n".join([f"{time} {response}" for (time, response) in loop])
 
     def construct_prompt_loop_history(self):
         return "\n\n".join([self.construct_prompt_loop(loop, i) for i, loop in enumerate(self.loop_history)])
@@ -81,7 +83,7 @@ class Env():
 
         retry = 0
         while True:
-            ret = chat(prompt)
+            ret = self.chatClient.chat(prompt)
             # print("====================")
             # print(prompt)
             # print("====================")
@@ -110,4 +112,3 @@ class Env():
             retry += 1
             if retry >= 3:
                 exit(0)
-

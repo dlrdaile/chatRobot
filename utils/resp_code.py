@@ -11,9 +11,9 @@ from fastapi.responses import ORJSONResponse
 from core.logger import logger
 
 
-def resp_200(*, data: Any = '', msg: str = "Success") -> dict:
+def resp_200(*, data: Any = '', msg: str = "Success") -> Response:
     # logger.info(msg)
-    return {'code': 200, 'data': data, 'msg': msg}
+    return ORJSONResponse(status_code=status.HTTP_200_OK, content={'code': 200, 'msg': msg, 'data': data})
 
 
 def resp_400(code: int = 400, data: str = None, msg: str = "请求错误(400)") -> Response:

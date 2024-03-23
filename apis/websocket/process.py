@@ -23,27 +23,34 @@ def get_data(data: SendDataModel) -> dict:
 
 
 async def responseUser(receive_data: SendDataModel, robot: Robot, route: str):
-    message, time_s = robot.run(receive_data.data.content)
-    if isinstance(message, str):
-        receive_data.data = ChatItemModel(
-            content=message,
-            sendTime=time_s,
-            id=uuid4().hex,
-            status="success",
-            type="text",
-            toContactId=receive_data.data.toContactId,
-            fromUser={
-                "avatar": "https://dl-demo-test1.oss-cn-beijing.aliyuncs.com/myBlog/imgassets%2Fimg%2F2024%2F03%2F23%2F19-30-00-3e3888ea071cad811454261db447c0fe-fbb7c5f5807747ddbe57a1d1a395860-b73d21.png",
-                "displayName": "徐天行",
-                "id": receive_data.data.fromUser.id},
-            time=robot.time)
-        receive_data.socketType = "sendData"
+    try:
+        message, time_s, end = robot.run(receive_data.data.content)
+        if isinstance(message, str):
+            receive_data.data = ChatItemModel(
+                content=message,
+                sendTime=time_s,
+                id=uuid4().hex,
+                status="success",
+                type="text",
+                toContactId=receive_data.data.toContactId,
+                fromUser={
+                    "avatar": "https://dl-demo-test1.oss-cn-beijing.aliyuncs.com/myBlog/imgassets%2Fimg%2F2024%2F03%2F23%2F19-30-00-3e3888ea071cad811454261db447c0fe-fbb7c5f5807747ddbe57a1d1a395860-b73d21.png",
+                    "displayName": "徐天行",
+                    "id": receive_data.data.fromUser.id},
+                time=robot.time,
+                end=end)
+            receive_data.socketType = "sendData"
+            res_data = get_data(receive_data)
+            await manager.send_personal_json(res_data, robot.client_id, route)
+    except Exception as e:
+        receive_data.socketType = "backFail"
+        receive_data.data = str(e)
         res_data = get_data(receive_data)
         await manager.send_personal_json(res_data, robot.client_id, route)
 
 
-@websocket_api.websocket("/chat/{client_id}")
-async def get_process_data(websocket: WebSocket, client_id: str):
+@websocket_api.websocket("/chat/{client_id}/{api_key}")
+async def get_process_data(websocket: WebSocket, client_id: str, api_key: str):
     # tokeninfo: TokenInfo = await check_jwt_token(token)
     # if not tokeninfo.isAdmin :
     #     raise PermissionNotEnough
@@ -63,7 +70,7 @@ async def get_process_data(websocket: WebSocket, client_id: str):
                 robot = robotsManager.get_robot(client_id, receive_data.data.toContactId)
                 print(client_id, receive_data.data.toContactId)
                 if robot is None:
-                    robotsManager.add_robot(client_id, receive_data.data.toContactId)
+                    robotsManager.add_robot(client_id, receive_data.data.toContactId, api_key)
                     robot = robotsManager.get_robot(client_id, receive_data.data.toContactId)
                 if robot is not None:
                     await responseUser(receive_data, robot, route)
