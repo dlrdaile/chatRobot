@@ -18,7 +18,7 @@ class ChatItemModel(BaseModel):
     fromUser: FromUserModel
     id: str
     sendTime: int | str
-    status: str
+    status: str = "success"
     type: str
     toContactId: str
     time: int = 0
