@@ -53,7 +53,7 @@ prompt = '''徐天行是一名陆军士兵，陷入了时间循环。他早上8:
 try:
     from .zhipuModel import Chat
 except:
-    from zhipuModel import Chat
+    from .zhipuModel import Chat
 import re
 
 
