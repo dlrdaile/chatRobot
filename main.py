@@ -39,8 +39,8 @@ def create_app(app):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("日志初始化成功！！！")  # 初始化日志
-    ml_models["actor"] = Actor()
-    ml_models["env"] = Env()
+    # ml_models["actor"] = Actor()
+    # ml_models["env"] = Env()
     yield
     ml_models.clear()
     logger.info("系统程序被关闭了")
@@ -58,7 +58,7 @@ async def read_root():
 @app.post("/")
 async def write_root(sendData: SendDataModel):
     route = 'chat'
-    id = 123
+    id = '123'
     if manager.manager_exit(route, id):
         await manager.send_personal_json(sendData.dict(), id, route)
         return {"result": "success"}
