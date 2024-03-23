@@ -16,25 +16,33 @@ class Robot:
     def run(self, content):
         message = None
         time_s = '8:{:02d}'.format(self.time)
-        if self.t == 0:
-            message = self.actor.act(time_s, 'message')
-
+        print(time_s)
+        if self.time > 0:
             self.actor.user_input(content)
-            self.time += 1
-        else:
-            action = self.actor.act(time_s, 'action')
-            response, act_time = self.env.act(action)
-            action[2] = response.replace('徐天行', '你')
-            self.actor.add_action(action)
-            self.time += act_time
-        self.t = 1 - self.t
-        if self.time >= 20:
+        
+        while True:
+            t, message = self.actor.act(time_s)
+            if t == 'A':
+                self.time += 1
+                break
+            else:
+                action = message
+                response, act_time, end = self.env.act(action)
+                action[2] = response.replace('徐天行', '你')
+                self.actor.add_action(action)
+                self.time += act_time
+                if self.time >= 30 or end > 0:
+                    message = None
+                    break
+
+        if self.time >= 30:
             self.actor.reset()
             self.env.new_loop()
             self.time = 0
-            self.t = 0
             print("=========================== Boom =============================")
-        return message, time_s
+
+        time_s = '8:{:02d}'.format(self.time)
+        return message, time_s, end
 
 
 class RobotManager:
