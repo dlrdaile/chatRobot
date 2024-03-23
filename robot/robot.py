@@ -1,6 +1,6 @@
 from .actor import Actor
 from .env import Env
-from .zhipu import Chat
+from .zhipuModel import Chat
 from typing import Dict
 from core.logger import logger
 

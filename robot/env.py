@@ -51,9 +51,9 @@ prompt = '''徐天行是一名陆军士兵，陷入了时间循环。他早上8:
 # 请注意，尽量在多次循环后再让徐天行发现真相并成功阻止炸弹爆炸。
 
 try:
-    from .zhipu import Chat
+    from .zhipuModel import Chat
 except:
-    from zhipu import Chat
+    from zhipuModel import Chat
 import re
 
 

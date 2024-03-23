@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from core.logger import logger
-from robot.zhipu import Chat
+from robot.zhipuModel import Chat
 from utils.resp_code import resp_200, resp_400
 
 

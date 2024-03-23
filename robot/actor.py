@@ -20,9 +20,9 @@ B. 依据顾文博的最新指示进行行动。要求：输出行动内容，�
 '''
 
 try:
-    from .zhipu import Chat
+    from .zhipuModel import Chat
 except:
-    from zhipu import Chat
+    from zhipuModel import Chat
 
 
 class Actor():
