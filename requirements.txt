@@ -1,0 +1,10 @@
+fastapi==0.110.0
+loguru==0.7.2
+numpy==1.24.4
+pydantic==2.6.4
+pywin32==306
+SQLAlchemy==2.0.16
+SQLAlchemy==2.0.28
+starlette==0.37.2
+uvicorn==0.29.0
+zhipuai==2.0.1
