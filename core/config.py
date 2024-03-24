@@ -24,7 +24,7 @@ class Settings(BaseConfig):
     DEFAULT_PORT: int = 8000  # 默认端口
     DEFAULT_HOST: str = "0.0.0.0"
 
-    API_PREFIX: str = "/apis"  # 接口前缀
+    API_PREFIX: str = "/api"  # 接口前缀
     STATIC_DIR: str = 'static'  # 静态文件目录
     GLOBAL_ENCODING: str = 'utf-8'  # 全局编码
     CORS_ORIGINS: List[str] = ["*"]  # 跨域请求

@@ -18,11 +18,11 @@ def register_router(app: FastAPI):
     # app.include_router(test_api,prefix="/apis/test")
     # # app.include_router(redis_check.router, prefix=settings.API_PREFIX, tags=["Redis"])  # Redis(不需要权限)
     # #
-    app.include_router(apiKey_api, prefix=settings.API_PREFIX, tags=["apiKey"])  # Login(权限在每个接口上)
+    app.include_router(apiKey_api,prefix=settings.API_PREFIX, tags=["apiKey"])  # Login(权限在每个接口上)
     # app.include_router(commons_api, prefix=settings.API_PREFIX, tags=["Common"])  # Login(权限在每个接口上)
     # app.include_router(client_api,prefix=settings.API_PREFIX,tags=['Client'])
     # app.include_router(admin_api,prefix=settings.API_PREFIX,tags=['Admin'])
-    app.include_router(websocket_api, tags=['Websocket'])
+    app.include_router(websocket_api, prefix=settings.API_PREFIX,tags=['Websocket'])
     #
     # app.include_router(dashboard.router, prefix=settings.API_PREFIX, tags=["Dashboard"],
     #                    dependencies=[Security(get_current_user, scopes=[])])  # Dashboard(不需要权限,但需要登录)
