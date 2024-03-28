@@ -1,12 +1,10 @@
 import uvicorn
-from fastapi import FastAPI, Body
+from fastapi import FastAPI, Body, BackgroundTasks
 
 from core.config import settings
 from core.logger import logger
 from contextlib import asynccontextmanager
 from apis.websocket.process import manager
-from robot.actor import Actor
-from robot.env import Env
 from robot import ml_models
 # from db import init_db,init_data
 from schema.websocket.SendDataModel import SendDataModel
@@ -15,7 +13,9 @@ from register import (
     register_exception,
     register_cors,
     register_middleware,
-    register_router)
+    register_router,
+    register_timer,
+)
 
 
 # from sqlmodel.sql.expression import Select,SelectOfScalar
@@ -39,6 +39,7 @@ def create_app(app):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("日志初始化成功！！！")  # 初始化日志
+    register_timer(app)  # 注册定时器
     # ml_models["actor"] = Actor()
     # ml_models["env"] = Env()
     yield
@@ -50,8 +51,13 @@ app = FastAPI(lifespan=lifespan)
 create_app(app)  # 加载注册中心
 
 
+async def background_task():
+    print(123)
+
+
 @app.get("/")
-async def read_root():
+async def read_root(background_tasks: BackgroundTasks):
+    background_tasks.add_task(background_task)
     return {"Hello": "World"}
 
 

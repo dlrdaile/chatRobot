@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends
-from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from core.logger import logger
 from robot.zhipuModel import Chat
@@ -14,12 +13,12 @@ apiKey_api = APIRouter(prefix='/apiKey')
 
 
 @apiKey_api.post("/validate")
-def validate(api_key_model: ApiKeyModel):
+async def validate(api_key_model: ApiKeyModel):
     logger.info(f"api_key_model: {api_key_model}")
     try:
         api_key = api_key_model.api_key
         chat_client = Chat(api_key)
-        res = chat_client.chat("你好")
+        res = await chat_client.chat("你好")
         return resp_200(data={'valid': True, 'api_key': api_key})
     except Exception as e:
         logger.error(f"api_key_model: {api_key_model}")

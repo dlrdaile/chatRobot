@@ -63,7 +63,7 @@ class Actor():
         (time, action, response) = action
         self.records.append(f"{time} {action} {response}")
 
-    def act(self, time):
+    async def act(self, time):
         self.time = time
         prompt = self.construct_prompt()
 
@@ -73,7 +73,7 @@ class Actor():
             if retry >= 5:
                 exit(0)
 
-            ret = self.chatClient.chat(prompt)
+            ret = await self.chatClient.chat(prompt)
             message = None
             t = None
             lines = ret.split('\n')

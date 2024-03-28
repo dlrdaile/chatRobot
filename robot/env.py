@@ -80,12 +80,12 @@ class Env():
             f"{action[0]} {action[1]}"
         )
 
-    def act(self, action):
+    async def act(self, action):
         prompt = self.construct_prompt(action)
 
         retry = 0
         while True:
-            ret = self.chatClient.chat(prompt)
+            ret = await self.chatClient.chat(prompt)
             # print("====================")
             # print(prompt)
             # print("====================")
