@@ -1,22 +1,29 @@
-from zhipuai import ZhipuAI
+# from zhipuai import ZhipuAI
 import time
 import jwt
 import aiohttp
+from abc import ABC, abstractmethod
+import requests
+from langchain_community.llms.tongyi import Tongyi
+
+class ChatModel(ABC):
+    @abstractmethod
+    def __init__(self, api_key: str):
+        pass
+
+    @abstractmethod
+    async def chat(self, prompt):
+        pass
 
 
-class Chat:
+class ZhipuChatModel(ChatModel):
     def __init__(self, api_key: str):
         self.api_key = api_key
         self.url = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
 
-    async def chat(self, prompt: str, sys_prompt="", history=None):
-        messages = []
-        if sys_prompt != "":
-            messages.append({"role": "system", "content": sys_prompt})
-        if history is not None:
-            messages += history
-        if prompt != "":
-            messages.append({"role": "user", "content": prompt})
+    async def chat(self, prompt):
+        messages = [{"role": "user", "content": prompt}]
+
         async with aiohttp.ClientSession() as session:
             data = {
                 'model': 'glm-4',
@@ -53,9 +60,28 @@ class Chat:
             algorithm="HS256",
             headers={"alg": "HS256", "sign_type": "SIGN"},
         )
+    
+class TongyiChatModel(ChatModel):
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+
+    async def chat(self, prompt):
+        llm = Tongyi(dashscope_api_key=self.api_key, model_name="qwen-max")
+        result = await llm.agenerate([prompt])
+        return result.generations[0][0].text
+
+class Chat:
+    def __init__(self, api_key: str):
+        # self.chat_model = ZhipuChatModel(api_key)
+        self.chat_model = TongyiChatModel(api_key)
+
+    async def chat(self, prompt: str, sys_prompt="", history=None):
+        ret = await self.chat_model.chat(prompt)
+        return ret
 
 
 if __name__ == '__main__':
     import asyncio
-    chat = Chat("e32a4b442f4c64e8c792c16d3cdec1b0.s4njtj6LqPI4vHkL")
+    # chat = Chat("e32a4b442f4c64e8c792c16d3cdec1b0.s4njtj6LqPI4vHkL")
+    chat = Chat("sk-2881a944a074494c8de43fdedd65d162")
     print(asyncio.run(chat.chat("你好")))
