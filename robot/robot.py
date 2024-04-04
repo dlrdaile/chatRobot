@@ -1,27 +1,61 @@
+import time as time_module
+
+from core.logger import logger
+from schema.websocket.ChatItemModel import ApiKeyModel
 from .actor import Actor
 from .env import Env
-from .zhipuModel import ZhiPuChat
-from core.logger import logger
-from collections import defaultdict
-import time as time_module
-from collections import deque
+from .zhipuModel import Chat
+from typing import Optional
+from pydantic import BaseModel
+
+
+class ContextResponseModel(BaseModel):
+    message: str
+    time_s: str
+    end: int
+    robot_time: int
 
 
 class Robot:
-    def __init__(self, client_id: str, contact_id: str, chatClient: ZhiPuChat, env: Env):
-        self.chatClient = chatClient
-        self.actor = Actor(self.chatClient)
-        self.env = env
+    def __init__(self, client_id: str, chatClient: Chat):
         self.client_id = client_id
-        self.contact_id = contact_id
+        self.env = Env()
+        self.chat_client = chatClient
+        self.robot_context = {}
+        self.activate_time = time_module.time()
+        self.send_message_queue = {}
+
+    def add_context(self, contact_id: str):
+        self.robot_context[contact_id] = RobotContext(self)
+        return self.robot_context[contact_id]
+
+    async def run(self, contact_id: str, content: str) -> ContextResponseModel:
+        try:
+            self.activate_time = time_module.time()
+            context = self.robot_context.get(contact_id, None)
+            if context is None:
+                context = self.add_context(contact_id)
+            result = await context.run(content, self.chat_client)
+        except Exception as e:
+            error_info = f"机器人运行失败，原因：{e}"
+            logger.error(error_info)
+            raise Exception(error_info)
+        else:
+            self.activate_time = time_module.time()
+        return result
+
+
+class RobotContext:
+    def __init__(self, robot: Robot):
+        self.actor = Actor()
+        self.robot = robot
         self.time = 0
         self.t = 0
         self.max_times = 30
         self.activate_time = time_module.time()
-        self.send_message_queue = {}
 
-
-    async def run(self, content):
+    async def run(self, content, chatClient: Chat) -> ContextResponseModel:
+        self.activate_time = time_module.time()
         message = ""
         time_s = '8:{:02d}'.format(self.time)
         end = 0
@@ -30,13 +64,13 @@ class Robot:
             self.actor.user_input(content)
         while True:
             self.activate_time = time_module.time()
-            t, message = await self.actor.act(time_s)
+            t, message = await self.actor.act(time_s, chatClient)
             if t == 'A':
                 self.time += 1
                 break
             else:
                 action = message
-                response, act_time, end = await self.env.act(action)
+                response, act_time, end = await self.robot.env.act(action, chatClient)
                 action[2] = response.replace('徐天行', '你')
                 self.actor.add_action(action)
                 self.time += act_time
@@ -46,69 +80,70 @@ class Robot:
         time_s = '8:{:02d}'.format(self.time)
         if self.time >= self.max_times:
             self.actor.reset()
-            self.env.new_loop()
+            self.robot.env.new_loop()
             self.time = 0
             end = 2
             print("=========================== Boom =============================")
-        return message, time_s, end
+        return ContextResponseModel(message=message, time_s=time_s, end=end, robot_time=self.time)
 
 
 class RobotManager:
-    def __init__(self):
-        self.robots = defaultdict(dict)
+    robots = {}
 
-    def get_robot(self, client_id: str, contact_id: str):
-        try:
-            return self.robots[client_id].get(contact_id, None)
-        except Exception as e:
-            logger.warning(f"获取机器人失败，原因：{e}")
-            return None
+    @classmethod
+    async def create_chat_client(cls, requestModel: ApiKeyModel):
+        api_key = requestModel.api_key
+        chat_client = Chat(api_key, requestModel.llm_platform, requestModel.llm_model)
+        res = await chat_client.chat("你好")
+        robot = cls.get_robot(requestModel.client_id)
+        if robot is None:
+            robot = cls.add_robot(requestModel.client_id)
+        robot.chat_client = chat_client
+        return res
 
-    def add_robot(self, client_id: str, contact_id: str, api_key: str):
+    @classmethod
+    def get_robot(cls, client_id: str) -> Optional[Robot]:
+        return cls.robots.get(client_id, None)
+
+    @classmethod
+    def add_robot(cls, client_id: str, chatClient: Chat = None) -> Optional[Robot]:
         try:
-            client_robot = self.robots[client_id].get(contact_id, {})
-            if client_robot == {} or client_robot is None:
-                chatClient = ZhiPuChat(api_key)
-                env = Env(chatClient)
-                self.robots[client_id][contact_id] = {'chatClient': chatClient, 'env': env,
-                                                      'robot': Robot(client_id, contact_id, chatClient, env)}
-            else:
-                if client_robot.get('chatClient', None) is None:
-                    chatClient = ZhiPuChat(api_key)
-                    self.robots[client_id][contact_id]['chatClient'] = chatClient
-                if client_robot.get('env', None) is None:
-                    chatClient = self.robots[client_id][contact_id]['chatClient']
-                    env = Env(chatClient)
-                    self.robots[client_id][contact_id]['env'] = env
-                if client_robot.get('robot', None) is None:
-                    chatClient = self.robots[client_id][contact_id]['chatClient']
-                    env = self.robots[client_id][contact_id]['env']
-                    self.robots[client_id][contact_id]['robot'] = Robot(client_id, contact_id, chatClient, env)
+            robot = cls.get_robot(client_id)
+            if robot is None:
+                cls.robots[client_id] = Robot(client_id, chatClient)
         except Exception as e:
             logger.warning(f"添加机器人失败，原因：{e}")
+        return cls.get_robot(client_id)
 
-    def remove_robot(self, client_id: str, contact_id: str):
+    @classmethod
+    def remove_robot(cls, client_id: str) -> bool:
         try:
-            self.robots[client_id].pop(contact_id)
+            cls.robots.pop(client_id)
+            return True
         except Exception as e:
             logger.warning(f"删除机器人失败，原因：{e}")
+        return False
 
-    def remove_all_robot(self, client_id: str):
-        try:
-            self.robots.pop(client_id)
-        except Exception as e:
-            logger.warning(f"删除机器人失败，原因：{e}")
-
-    def cleanNoUseRobot(self):
+    @classmethod
+    def cleanNoUseRobot(cls):
+        now = time_module.time()
         remove_contact_ids = []
-        for client_id, robots in self.robots.items():
-            for contact_id, robot in robots.items():
-                if time_module.time() - robot['robot'].activate_time > 10 * 60:
+        remove_client_ids = []
+        for client_id, robot in cls.robots.items():
+            if now - robot.activate_time > 10 * 60:
+                remove_client_ids.append(client_id)
+                continue
+            for contact_id, robot_context in robot.robot_context.items():
+                if now - robot_context.activate_time > 5 * 60:
                     remove_contact_ids.append((client_id, contact_id))
-
+        for client_id in remove_client_ids:
+            cls.remove_robot(client_id)
+            logger.info(f"清理无用机器人：{client_id}")
         for client_id, contact_id in remove_contact_ids:
-            self.remove_robot(client_id, contact_id)
-            logger.info(f"清理无用机器人：{client_id} {contact_id}")
-            if len(self.robots[client_id]) == 0:
-                self.robots.pop(client_id)
-                logger.info(f"清理无用机器人：{client_id}")
+            robot = cls.get_robot(client_id)
+            if robot is not None:
+                try:
+                    robot.robot_context.pop(contact_id)
+                    logger.info(f"清理无用机器人：{client_id} {contact_id}")
+                except:
+                    logger.warning(f"清理无用机器人失败：{client_id} {contact_id}")

@@ -2,12 +2,12 @@ from core.logger import logger
 from fastapi import FastAPI
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
-from apis.websocket.process import manager, robotsManager
+from apis.websocket.process import manager, RobotManager
 
 
 def detectRobotActivateJob():
     logger.info("定时器开始清理无用机器人！！！")
-    robotsManager.cleanNoUseRobot()
+    RobotManager.cleanNoUseRobot()
 
 
 def register_timer(app: FastAPI):

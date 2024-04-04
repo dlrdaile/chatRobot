@@ -20,14 +20,13 @@ B. 依据顾文博的最新指示进行行动。要求：输出行动内容，�
 '''
 
 try:
-    from .zhipuModel import ZhiPuChat
+    from .zhipuModel import Chat
 except:
-    from .zhipuModel import ZhiPuChat
+    from .zhipuModel import Chat
 
 
 class Actor():
-    def __init__(self, chatClient: ZhiPuChat):
-        self.chatClient = chatClient
+    def __init__(self):
         self.reset()
 
     def reset(self):
@@ -63,7 +62,7 @@ class Actor():
         (time, action, response) = action
         self.records.append(f"{time} {action} {response}")
 
-    async def act(self, time):
+    async def act(self, time, chatClient: Chat):
         self.time = time
         prompt = self.construct_prompt()
 
@@ -73,7 +72,7 @@ class Actor():
             if retry >= 5:
                 exit(0)
 
-            ret = await self.chatClient.chat(prompt)
+            ret = await chatClient.chat(prompt)
             message = None
             t = None
             lines = ret.split('\n')
