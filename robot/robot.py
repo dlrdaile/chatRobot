@@ -1,6 +1,6 @@
 from .actor import Actor
 from .env import Env
-from .zhipuModel import Chat
+from .zhipuModel import ZhiPuChat
 from core.logger import logger
 from collections import defaultdict
 import time as time_module
@@ -8,7 +8,7 @@ from collections import deque
 
 
 class Robot:
-    def __init__(self, client_id: str, contact_id: str, chatClient: Chat, env: Env):
+    def __init__(self, client_id: str, contact_id: str, chatClient: ZhiPuChat, env: Env):
         self.chatClient = chatClient
         self.actor = Actor(self.chatClient)
         self.env = env
@@ -68,13 +68,13 @@ class RobotManager:
         try:
             client_robot = self.robots[client_id].get(contact_id, {})
             if client_robot == {} or client_robot is None:
-                chatClient = Chat(api_key)
+                chatClient = ZhiPuChat(api_key)
                 env = Env(chatClient)
                 self.robots[client_id][contact_id] = {'chatClient': chatClient, 'env': env,
                                                       'robot': Robot(client_id, contact_id, chatClient, env)}
             else:
                 if client_robot.get('chatClient', None) is None:
-                    chatClient = Chat(api_key)
+                    chatClient = ZhiPuChat(api_key)
                     self.robots[client_id][contact_id]['chatClient'] = chatClient
                 if client_robot.get('env', None) is None:
                     chatClient = self.robots[client_id][contact_id]['chatClient']

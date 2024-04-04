@@ -51,14 +51,14 @@ prompt = '''徐天行是一名陆军士兵，陷入了时间循环。他早上8:
 # 请注意，尽量在多次循环后再让徐天行发现真相并成功阻止炸弹爆炸。
 
 try:
-    from .zhipuModel import Chat
+    from .zhipuModel import ZhiPuChat
 except:
-    from .zhipuModel import Chat
+    from .zhipuModel import ZhiPuChat
 import re
 
 
 class Env():
-    def __init__(self, chatClient: Chat):
+    def __init__(self, chatClient: ZhiPuChat):
         self.chatClient = chatClient
         self.loop_history = []
         self.loop = [["8:00", "徐天行从火车上醒来"]]  # (time, response)

@@ -4,7 +4,9 @@ import jwt
 import aiohttp
 
 
-class Chat:
+
+
+class ZhiPuChat:
     def __init__(self, api_key: str):
         self.api_key = api_key
         self.url = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
@@ -57,5 +59,5 @@ class Chat:
 
 if __name__ == '__main__':
     import asyncio
-    chat = Chat("e32a4b442f4c64e8c792c16d3cdec1b0.s4njtj6LqPI4vHkL")
+    chat = ZhiPuChat("e32a4b442f4c64e8c792c16d3cdec1b0.s4njtj6LqPI4vHkL")
     print(asyncio.run(chat.chat("你好")))

@@ -20,13 +20,13 @@ B. 依据顾文博的最新指示进行行动。要求：输出行动内容，�
 '''
 
 try:
-    from .zhipuModel import Chat
+    from .zhipuModel import ZhiPuChat
 except:
-    from .zhipuModel import Chat
+    from .zhipuModel import ZhiPuChat
 
 
 class Actor():
-    def __init__(self, chatClient: Chat):
+    def __init__(self, chatClient: ZhiPuChat):
         self.chatClient = chatClient
         self.reset()
 
